@@ -91,6 +91,6 @@ func printTile(piece Piece, tileColor string) {
 		tileColorDigit = "40"
 	}
 
-	fmt.Printf("|\033[%s;%s;5 qm %s \033[0m", pieceColorDigit, tileColorDigit, pieceStr)
+	fmt.Printf("|\033[%s;%s;5m %s \033[0m", pieceColorDigit, tileColorDigit, pieceStr)
 
 }
