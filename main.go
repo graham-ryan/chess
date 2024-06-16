@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+type Piece struct {
+	class uint8 // e.g. Q K N p... or empty
+	color string // Red or Blue
+}
+
 func main() {
 	board := [8][8]Piece{
 		{{'r',"Red"},{'N',"Red"},{'B',"Red"},{'K',"Red"},{'Q',"Red"},{'B',"Red"},{'N',"Red"},{'r',"Red"}},
@@ -32,6 +37,7 @@ func main() {
 		if err != nil {
 			message = err.Error()
 		} else {
+			message = ""
 			// Change the turn
 			if turn == "Blue" {
 				turn = "Red"
