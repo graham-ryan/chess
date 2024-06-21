@@ -2,48 +2,29 @@ package main
 
 import (
 	"bufio"
+	chess "chess/src/game"
 	"fmt"
 	"os"
 )
 
-type Piece struct {
-	class uint8 // e.g. Q K N p... or empty
-	color string // Red or Blue
-}
-
 func main() {
-	board := [8][8]Piece{
-		{{'r',"Red"},{'N',"Red"},{'B',"Red"},{'Q',"Red"},{'K',"Red"},{'B',"Red"},{'N',"Red"},{'r',"Red"}},
-		{{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"}},
-		{{},{},{},{},{},{},{},{}}, 
-		{{},{},{},{},{},{},{},{}},
-		{{},{},{},{},{},{},{},{}},
-		{{},{},{},{},{},{},{},{}},
-		{{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"}},
-		{{'r',"Blue"},{'N',"Blue"},{'B',"Blue"},{'Q',"Blue"},{'K',"Blue"},{'B',"Blue"},{'N',"Blue"},{'r',"Blue"}},
-	}
-	
+	// Start a new game
+	g := chess.StartGame()
+
 	// Game loop
 	message := ""
-	turn := "Blue" // false for blue, true for red 
 	var err error 
 	for {
-		printBoard(&board)
+		g.PrintBoard()
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Printf("\n%s\n\n",message)
-		fmt.Printf("%s's turn: ", turn)
+		fmt.Printf("%s's turn: ", g.GetTurn())
 		move, _ := reader.ReadString('\n')
-		err = ProcessMove(&board, move, turn)
+		err = g.ProcessMove(move)
 		if err != nil {
 			message = err.Error()
 		} else {
 			message = ""
-			// Change the turn
-			if turn == "Blue" {
-				turn = "Red"
-			} else {
-				turn = "Blue"
-			}
 		}
 	}
 }

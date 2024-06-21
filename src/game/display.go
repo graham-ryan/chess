@@ -1,10 +1,10 @@
-package main
+package game
 
 import (
 	"fmt"
 )
 
-func printBoard(board *[8][8]Piece) {
+func (g game) PrintBoard() {
 	var tileColor string = ""
 	fmt.Println("\033[100F\033[J") // Clear the screen
 	fmt.Println("---------------------------------")
@@ -15,7 +15,7 @@ func printBoard(board *[8][8]Piece) {
 			} else {
 				tileColor = "Black"
 			}
-			printTile(board[y][x], tileColor)
+			printTile(g.board[y][x], tileColor)
 			if x == 7 {
 				fmt.Printf("| %v", 8-y)
 			}
@@ -25,7 +25,7 @@ func printBoard(board *[8][8]Piece) {
 	fmt.Println("  a   b   c   d   e   f   g   h")
 }
 
-func printTile(piece Piece, tileColor string) {
+func printTile(piece piece, tileColor string) {
 	pieceStr := ""
 	switch piece.class {
 		case 'Q':

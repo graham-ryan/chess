@@ -1,4 +1,4 @@
-package main
+package game
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func convertInputToArrayCoordinate(coordinate byte, rowOrCol string) (int, error
 		return val, OutOfRangeError{}
 	} 
 
-	return val, nil
+	return val, nil 
 }
 
 // Remove symbols not necessary to calculating the move
@@ -46,7 +46,7 @@ func contains(arr []rune, txt rune) bool {
 }
 
 type moveType interface {
-	process(board *[8][8]Piece, turn string) error
+	process(g *game) error
 }
 
 type normalMove struct {
@@ -64,8 +64,8 @@ type pawnMove struct {
 
 type pawnTakes struct {
 	fromCol int
-	toRow int
 	toCol int
+	toRow int
 }
 
 type pawnPromotes struct {
