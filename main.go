@@ -13,14 +13,14 @@ type Piece struct {
 
 func main() {
 	board := [8][8]Piece{
-		{{'r',"Red"},{'N',"Red"},{'B',"Red"},{'K',"Red"},{'Q',"Red"},{'B',"Red"},{'N',"Red"},{'r',"Red"}},
+		{{'r',"Red"},{'N',"Red"},{'B',"Red"},{'Q',"Red"},{'K',"Red"},{'B',"Red"},{'N',"Red"},{'r',"Red"}},
 		{{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"},{'p',"Red"}},
 		{{},{},{},{},{},{},{},{}}, 
 		{{},{},{},{},{},{},{},{}},
 		{{},{},{},{},{},{},{},{}},
 		{{},{},{},{},{},{},{},{}},
 		{{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"},{'p',"Blue"}},
-		{{'r',"Blue"},{'N',"Blue"},{'B',"Blue"},{'K',"Blue"},{'Q',"Blue"},{'B',"Blue"},{'N',"Blue"},{'r',"Blue"}},
+		{{'r',"Blue"},{'N',"Blue"},{'B',"Blue"},{'Q',"Blue"},{'K',"Blue"},{'B',"Blue"},{'N',"Blue"},{'r',"Blue"}},
 	}
 	
 	// Game loop

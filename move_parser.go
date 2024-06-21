@@ -3,11 +3,29 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type FailedParseError struct {}
 func (e *FailedParseError) Error() string {
 	return "We parsed a type that doesn't exist, I guess? Weird."
+}
+
+// Convert ASCII representation of row to our board 2d array
+func convertInputToArrayCoordinate(coordinate byte, rowOrCol string) (int, error) {
+	val := 0
+	if rowOrCol == "row" {
+		val = 7 - (int(coordinate) - 49)
+	} else if rowOrCol == "col" {
+		val = int(coordinate) - 97
+	} 
+
+	// cols and rows must be in range [0-7]
+	if val < 0 || val > 7 {
+		return val, OutOfRangeError{}
+	} 
+
+	return val, nil
 }
 
 // Remove symbols not necessary to calculating the move
@@ -18,45 +36,48 @@ func RemoveSpecialCharacters(move *string) {
 	}
 }
 
+func contains(arr []rune, txt rune) bool {
+	for _, v := range arr {
+		if v == txt {
+			return true
+		}
+	}
+	return false
+}
+
 type moveType interface {
 	process(board *[8][8]Piece, turn string) error
 }
 
 type normalMove struct {
-	piecePrime piecePrime
-	col byte
-	row byte
+	piece rune
+	fromCol *int
+	fromRow *int
+	toCol int
+	toRow int
 }
 
 type pawnMove struct {
-	col byte
-	row byte
+	col int
+	row int
 }
 
 type pawnTakes struct {
-	fromCol byte
-	toCol byte
-	row byte
+	fromCol int
+	toRow int
+	toCol int
 }
 
 type pawnPromotes struct {
-	fromCol byte
-	toCol byte
-	row byte
-	pawnPromotionPiece byte
+	fromCol int
+	toCol int
+	toRow int
+	pawnPromotionPiece int
 }
 
 type kingside struct {}
 
 type queenside struct {}
-
-type piecePrime struct {
-	// TODO
-}
-
-type column struct {
-	val byte
-}
 
 // Determines if the move string is valid algebraic notation.
 //
@@ -76,22 +97,76 @@ type column struct {
 // {PawnPromotionPiece} -> Q|N|B|R
 // {Column} -> a|b|c|d|e|f|g|h
 // {Row} -> 1|2|3|4|5|6|7|8
-func ParseMove(move string) (moveType, error) {
-	//notation_pieces := [...]string{"Q","K","N","B","R"}
+func parseMove(move string) (moveType, error) {
+	notation_pieces := []rune{'Q','K','N','B','R'}
 	//pawn_promotion_pieces := [...]string{"Q","N","B","R"}
 
-	fmt.Print(len(move))
+	// TODO pawn promotion???
 	if move == "O-O" {
 		return kingside{}, nil
+
 	} else if move == "O-O-O" {
 		return queenside{}, nil
+
+	} else if contains(notation_pieces, rune(move[0])) {
+		return parseNormalMove(move)
+
 	} else if len(move) == 3 {
-		//if notation_pieces move[0]
-		return pawnMove{move[0],move[1]}, nil
+		col, err := convertInputToArrayCoordinate(move[0], "col")
+		if err != nil {
+			return nil, err
+		}
+		row, err := convertInputToArrayCoordinate(move[1], "row")
+		if err != nil {
+			return nil, err
+		}
+		return pawnMove{col,row}, nil
+
 	} else if len(move) == 4 {
-		return pawnTakes{move[0],move[1],move[2]}, nil
-	} else if len(move) == 5 { 
-		return pawnMove{move[0],move[1]}, nil
+		fromCol, err := convertInputToArrayCoordinate(move[0], "col")
+		if err != nil {
+			return nil, err
+		}
+		toCol, err := convertInputToArrayCoordinate(move[1], "col")
+		if err != nil {
+			return nil, err
+		}
+		toRow, err := convertInputToArrayCoordinate(move[2], "row")
+		if err != nil {
+			return nil, err
+		}
+		return pawnTakes{fromCol,toCol,toRow}, nil
+
+	} else {
+		return nil, &FailedParseError{}
+	}
+}
+
+// Parsing a regular non-pawn move
+// Assumes that the first char in move is in the set [Q|K|N|B|R]
+func parseNormalMove(move string) (moveType, error) {
+	fmt.Printf("mv: %v", move)
+	time.Sleep(time.Second*5)
+	if len(move) == 4 {
+		// Simple like Nf3, Be4
+		toCol, err := convertInputToArrayCoordinate(move[2], "col")
+		if err != nil {
+			return nil, err
+		}
+		toRow, err := convertInputToArrayCoordinate(move[3], "row")
+		if err != nil {
+			return nil, err
+		}
+		return normalMove{rune(move[0]),nil,nil,toCol,toRow}, nil
+
+	} else if len(move) == 5 {
+		// Second character could be a row or a column
+		return nil, &FailedParseError{}
+
+	} else if len(move) == 6 {
+		// Second character is column, third is row
+		return nil, &FailedParseError{}
+
 	} else {
 		return nil, &FailedParseError{}
 	}
