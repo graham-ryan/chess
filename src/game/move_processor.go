@@ -1,10 +1,5 @@
 package game
 
-import (
-	"fmt"
-	"time"
-)
-
 func getForward(turn string) int {
 	if turn == "Blue" {
 		return -1
@@ -13,21 +8,31 @@ func getForward(turn string) int {
 	}
 }
 
-type PawnNotFoundError struct {}
-func (PawnNotFoundError) Error() string {return "Can't find the pawn you want to move"}
+type PieceNotFoundError struct{}
+
+func (PieceNotFoundError) Error() string { return "Can't find the piece you want to move" }
+
+type PawnNotFoundError struct{}
+
+func (PawnNotFoundError) Error() string { return "Can't find the pawn you want to move" }
 
 type PawnNothingToTakeError struct{}
-func (PawnNothingToTakeError) Error() string {return "Pawn has nothing to take on that square"}
 
-type SomethingInTheWayError struct {}
-func (SomethingInTheWayError) Error() string {return "There's something in the way of the piece you want to move"}
+func (PawnNothingToTakeError) Error() string { return "Pawn has nothing to take on that square" }
 
-type OutOfRangeError struct {}
-func (OutOfRangeError) Error() string {return "You indicated a row or column that doesn't exist"}
+type SomethingInTheWayError struct{}
+
+func (SomethingInTheWayError) Error() string {
+	return "There's something in the way of the piece you want to move"
+}
+
+type OutOfRangeError struct{}
+
+func (OutOfRangeError) Error() string { return "You indicated a row or column that doesn't exist" }
 
 func (mv pawnMove) process(g *game) error {
 	forward := getForward(g.turn)
-	
+
 	if g.board[mv.row-forward][mv.col].class == 'p' && g.board[mv.row-forward][mv.col].color == g.turn {
 		// Pawn moves one sqaure
 		g.board[mv.row][mv.col] = g.board[mv.row-forward][mv.col]
@@ -74,7 +79,33 @@ func (mv queenside) process(g *game) error {
 }
 
 func (mv normalMove) process(g *game) error {
-	fmt.Println(mv)
-	time.Sleep(10*time.Second)
+	// // Find the piece the move wants to move
+	// numPiecesOfThisType := 0
+	// for y := 0; y < 8; y++ {
+	// 	for x := 0; x < 8; x++ {
+	// 		if g.board[y][x].class == uint8(mv.piece) {
+	// 			numPiecesOfThisType += 1
+	// 		}
+	// 	}
+	// }
+
+	// if numPiecesOfThisType == 0 {
+	// 	return PieceNotFoundError{}
+	// } else if numPiecesOfThisType == 1 {
+
+	// }
+
+	// Make the move if possible
+	switch mv.piece {
+	case 'Q':
+	case 'K':
+	case 'B':
+	case 'N':
+	case 'R':
+
+	default:
+		return nil
+	}
+
 	return nil
 }

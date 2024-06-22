@@ -28,23 +28,23 @@ func (g game) PrintBoard() {
 func printTile(piece piece, tileColor string) {
 	pieceStr := ""
 	switch piece.class {
-		case 'Q':
-			pieceStr = "Q" 
-		case 'K':
-			pieceStr = "K" 
-		case 'B':
-			pieceStr = "B" 
-		case 'N':
-			pieceStr = "N"
-		case 'r':
-			pieceStr = "R"
-		case 'p':
-			pieceStr = "p" 
-		default:
-			pieceStr = " "
+	case 'Q':
+		pieceStr = "Q"
+	case 'K':
+		pieceStr = "K"
+	case 'B':
+		pieceStr = "B"
+	case 'N':
+		pieceStr = "N"
+	case 'R':
+		pieceStr = "R"
+	case 'p':
+		pieceStr = "p"
+	default:
+		pieceStr = " "
 	}
 
-	var pieceColorDigit string 
+	var pieceColorDigit string
 	if piece.color == "Red" {
 		pieceColorDigit = "31"
 	} else {
