@@ -50,12 +50,19 @@ func (g game) String() string {
 
 // Parses the move string, validates that it's possible (TODO), and makes the move.
 func (g *game) ProcessMove(mv string) (err error) {
+	if g.gameOver {
+		return nil
+	}
 	// Clean string
 	mv = strings.TrimSpace(mv)
+
+	// Determine the type of move the user wants in Algebraic Notation (e4, Nd3, Qh8...)
 	move, err := parseMove(mv)
 	if err != nil {
 		return err
 	}
+
+	// Determine if the move is possible
 	err = move.process(g)
 	if err != nil {
 		return err

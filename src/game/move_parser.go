@@ -61,87 +61,111 @@ type normalMove struct {
 type pawnMove struct {
 	col int
 	row int
+	pawnPromotionPiece *rune
 }
 
 type pawnTakes struct {
 	fromCol int
 	toCol   int
 	toRow   int
-}
-
-type pawnPromotes struct {
-	fromCol            int
-	toCol              int
-	toRow              int
-	pawnPromotionPiece int
+	pawnPromotionPiece *rune
 }
 
 type kingside struct{}
 
 type queenside struct{}
 
-// Determines if the move string is valid algebraic notation.
-//
+// Determines if the move string is valid algebraic notation and returns a struct.
 // Algebraic notation (e.g. e4, Nh3, Qb6) has the following grammar:
-// {Move} -> {NormalMove}|{PawnMove}|{PawnTakes}|{PawnPromotes}|{Kingside}|{Queenside}
-// {NormalMove} -> {PiecePrime}{Column}{Row}
-// {PawnMove} -> {Column}{Row}
-// {PawnTakes} -> {Column}{Column}{Row}
-// {PawnPromotes} -> {Column}{Column}{Row}{PawnPromotionPiece} TODO ambiguous if takes or regular move
-// {Kingside} -> 0-0
-// {Queenside} -> 0-0-0
-// {PiecePrime} -> {Piece}
-// {PiecePrime} -> {Piece}{Column}
-// {PiecePrime} -> {Piece}{Row}
-// {PiecePrime} -> {Piece}{Column}{Row}
-// {Piece} -> Q|K|N|B|R
-// {PawnPromotionPiece} -> Q|N|B|R
-// {Column} -> a|b|c|d|e|f|g|h
-// {Row} -> 1|2|3|4|5|6|7|8
-func parseMove(move string) (moveType, error) {
+func parseMove(mv string) (moveType, error) {
 	notation_pieces := []rune{'Q', 'K', 'N', 'B', 'R'}
-	//pawn_promotion_pieces := [...]string{"Q","N","B","R"}
 
-	// TODO pawn promotion???
-	if move == "O-O" {
+	if mv == "O-O" {
 		return kingside{}, nil
 
-	} else if move == "O-O-O" {
+	} else if mv == "O-O-O" {
 		return queenside{}, nil
 
-	} else if contains(notation_pieces, rune(move[0])) {
-		return parseNormalMove(move)
+	} else if contains(notation_pieces, rune(mv[0])) {
+		return parseNormalMove(mv)
 
-	} else if len(move) == 2 {
-		col, err := convertInputToArrayCoordinate(move[0], "col")
-		if err != nil {
-			return nil, err
-		}
-		row, err := convertInputToArrayCoordinate(move[1], "row")
-		if err != nil {
-			return nil, err
-		}
-		return pawnMove{col, row}, nil
+	} else {
+		return parsePawnMove(mv)	
+	}
+}
 
-	} else if len(move) == 3 {
-		// TODO this could be pawnTakes OR pawnMovePromotes
-		fromCol, err := convertInputToArrayCoordinate(move[0], "col")
+// Parsing a regular non-pawn move
+// Assumes that the first char in move is in the set [Q|K|N|B|R]
+func parseNormalMove(mv string) (moveType, error) {
+	fmt.Printf("mv: %v", mv)
+	time.Sleep(time.Second * 5)
+	if len(mv) == 3 {
+		// Simple like Nf3, Be4
+		toCol, err := convertInputToArrayCoordinate(mv[1], "col")
 		if err != nil {
 			return nil, err
 		}
-		toCol, err := convertInputToArrayCoordinate(move[1], "col")
+		toRow, err := convertInputToArrayCoordinate(mv[2], "row")
 		if err != nil {
 			return nil, err
 		}
-		toRow, err := convertInputToArrayCoordinate(move[2], "row")
-		if err != nil {
-			return nil, err
-		}
-		return pawnTakes{fromCol, toCol, toRow}, nil
+		return normalMove{rune(mv[0]), nil, nil, toCol, toRow}, nil
 
-	} else if len(move) == 4 {
-		// Must be pawnTakesPromotes, right?
-		return nil, &FailedParseError{}
+	} else if len(mv) == 4 {
+		// Second character could be a row or a column
+		if mv[1] >= 97 && mv[1] <=104 {
+			// Column
+			fromCol, err := convertInputToArrayCoordinate(mv[1], "col")
+			if err != nil {
+				return nil, err
+			}
+			toCol, err := convertInputToArrayCoordinate(mv[2], "col")
+			if err != nil {
+				return nil, err
+			}
+			toRow, err := convertInputToArrayCoordinate(mv[3], "row")
+			if err != nil {
+				return nil, err
+			}
+			return normalMove{rune(mv[0]), &fromCol, nil, toCol, toRow}, nil
+
+		} else {
+			// Row
+			fromRow, err := convertInputToArrayCoordinate(mv[1], "row")
+			if err != nil {
+				return nil, err
+			}
+			toCol, err := convertInputToArrayCoordinate(mv[2], "col")
+			if err != nil {
+				return nil, err
+			}
+			toRow, err := convertInputToArrayCoordinate(mv[3], "row")
+			if err != nil {
+				return nil, err
+			}
+			return normalMove{rune(mv[0]), nil, &fromRow, toCol, toRow}, nil
+
+		}
+
+	} else if len(mv) == 5 {
+		// Second character is column, third is row
+		fromCol, err := convertInputToArrayCoordinate(mv[1], "col")
+		if err != nil {
+			return nil, err
+		}
+		fromRow, err := convertInputToArrayCoordinate(mv[2], "row")
+		if err != nil {
+			return nil, err
+		}
+		toCol, err := convertInputToArrayCoordinate(mv[3], "col")
+		if err != nil {
+			return nil, err
+		}
+		toRow, err := convertInputToArrayCoordinate(mv[4], "row")
+		if err != nil {
+			return nil, err
+		}
+		return normalMove{rune(mv[0]), &fromCol, &fromRow, toCol, toRow}, nil
 
 	} else {
 		return nil, &FailedParseError{}
@@ -149,29 +173,73 @@ func parseMove(move string) (moveType, error) {
 }
 
 // Parsing a regular non-pawn move
-// Assumes that the first char in move is in the set [Q|K|N|B|R]
-func parseNormalMove(move string) (moveType, error) {
-	fmt.Printf("mv: %v", move)
-	time.Sleep(time.Second * 5)
-	if len(move) == 3 {
-		// Simple like Nf3, Be4
-		toCol, err := convertInputToArrayCoordinate(move[2], "col")
+// Assumes that the first char in move is a column
+func parsePawnMove(mv string) (moveType, error) {
+	pawn_promotion_pieces := []rune{'Q','N','B','R'}
+
+	if len(mv) == 2 {
+		col, err := convertInputToArrayCoordinate(mv[0], "col")
 		if err != nil {
 			return nil, err
 		}
-		toRow, err := convertInputToArrayCoordinate(move[3], "row")
+		row, err := convertInputToArrayCoordinate(mv[1], "row")
 		if err != nil {
 			return nil, err
 		}
-		return normalMove{rune(move[0]), nil, nil, toCol, toRow}, nil
+		return pawnMove{col, row, nil}, nil
 
-	} else if len(move) == 4 {
-		// Second character could be a row or a column
-		return nil, &FailedParseError{}
+	} else if len(mv) == 3 {
+		// Check if move contains a pawn promotion piece
+		if contains(pawn_promotion_pieces, rune(mv[2])) {
+			// Pawn Takes
+			col, err := convertInputToArrayCoordinate(mv[0], "col")
+			if err != nil {
+				return nil, err
+			}
+			row, err := convertInputToArrayCoordinate(mv[1], "row")
+			if err != nil {
+				return nil, err
+			}
+			promotion_piece := rune(mv[2])
+			return pawnMove{col, row, &promotion_piece}, nil
 
-	} else if len(move) == 5 {
-		// Second character is column, third is row
-		return nil, &FailedParseError{}
+		} else {
+			// Pawn Takes
+			fromCol, err := convertInputToArrayCoordinate(mv[0], "col")
+			if err != nil {
+				return nil, err
+			}
+			toCol, err := convertInputToArrayCoordinate(mv[1], "col")
+			if err != nil {
+				return nil, err
+			}
+			toRow, err := convertInputToArrayCoordinate(mv[2], "row")
+			if err != nil {
+				return nil, err
+			}
+			return pawnTakes{fromCol, toCol, toRow, nil}, nil
+		}
+
+	} else if len(mv) == 4 {
+		// Pawn takes and promotes
+		fromCol, err := convertInputToArrayCoordinate(mv[0], "col")
+		if err != nil {
+			return nil, err
+		}
+		toCol, err := convertInputToArrayCoordinate(mv[1], "col")
+		if err != nil {
+			return nil, err
+		}
+		toRow, err := convertInputToArrayCoordinate(mv[2], "row")
+		if err != nil {
+			return nil, err
+		}
+		// Ensure promotion piece is in set of promotion pieces
+		promotion_piece := rune(mv[3])
+		if !contains(pawn_promotion_pieces,promotion_piece) {
+			return nil, &FailedParseError{}
+		}
+		return pawnTakes{fromCol, toCol, toRow, &promotion_piece}, nil
 
 	} else {
 		return nil, &FailedParseError{}

@@ -2,12 +2,13 @@ package game
 
 import (
 	"fmt"
+	"strings"
 )
 
-func (g game) PrintBoard() {
+func GetBoardString(board [8][8]piece) string {
+	var b strings.Builder
 	var tileColor string = ""
-	fmt.Println("\033[100F\033[J") // Clear the screen
-	fmt.Println("---------------------------------")
+	fmt.Fprintf(&b, "---------------------------------\n")
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 8; x++ {
 			if (x+y)%2 == 0 {
@@ -15,17 +16,18 @@ func (g game) PrintBoard() {
 			} else {
 				tileColor = "Black"
 			}
-			printTile(g.board[y][x], tileColor)
+			fmt.Fprintf(&b, "%v", getTile(board[y][x], tileColor))
 			if x == 7 {
-				fmt.Printf("| %v", 8-y)
+				fmt.Fprintf(&b,"| %v", 8-y)
 			}
 		}
-		fmt.Println("\n---------------------------------")
+		fmt.Fprintf(&b, "\n---------------------------------\n")
 	}
-	fmt.Println("  a   b   c   d   e   f   g   h")
+	fmt.Fprintf(&b, "  a   b   c   d   e   f   g   h")
+	return b.String()
 }
 
-func printTile(piece piece, tileColor string) {
+func getTile(piece piece, tileColor string) string {
 	pieceStr := ""
 	switch piece.class {
 	case 'Q':
@@ -58,6 +60,5 @@ func printTile(piece piece, tileColor string) {
 		tileColorDigit = "40"
 	}
 
-	fmt.Printf("|\033[%s;%sm %s \033[0m", pieceColorDigit, tileColorDigit, pieceStr)
-
+	return fmt.Sprintf("|\033[%s;%sm %s \033[0m", pieceColorDigit, tileColorDigit, pieceStr)
 }

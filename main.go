@@ -15,7 +15,8 @@ func main() {
 	message := ""
 	var err error 
 	for {
-		g.PrintBoard()
+		fmt.Println("\033[100F\033[J") // Clear the screen
+		fmt.Printf("%v",chess.GetBoardString(g.GetBoard()))
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Printf("\n%s\n\n",message)
 		fmt.Printf("%s's turn: ", g.GetTurn())
